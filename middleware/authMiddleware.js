@@ -10,7 +10,7 @@ const authMiddleware = {
     
     try {
       const decoded = jwt.verify(token, process.env.JWT_SECRET);
-      req.user = decoded;
+      req.user = decoded; 
       next();
     } catch (error) {
       console.error('Error al verificar token:', error);
@@ -19,9 +19,12 @@ const authMiddleware = {
   },
 
   isAdmin: (req, res, next) => {
-    // En un sistema real, aquí verificarías si el usuario tiene rol de admin
-    // Por ahora asumimos que todos los usuarios autenticados son admin
-    next();
+    // Verificar si el usuario es administrador
+    if (req.user && req.user.role === 'admin') { 
+      next(); // El usuario es administrador, permite el acceso
+    } else {
+      return res.status(403).json({ message: 'Acceso denegado: Se requieren permisos de administrador' });
+    }
   }
 };
 

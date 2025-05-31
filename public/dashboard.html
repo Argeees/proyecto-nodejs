@@ -1,16 +1,224 @@
-<!-- public/dashboard.html -->
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8">
-  <title>Dashboard - Taller de Node.js</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Administración de Empleados</title>
+    <style>
+        body {
+            font-family: sans-serif;
+            margin: 20px;
+            background-color: #f4f4f4;
+            color: #333;
+        }
+        .container {
+            max-width: 1200px;
+            margin: auto;
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+        h1, h2 {
+            color: #00ff15;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        .header button {
+            background-color: #dc3545;
+            color: white;
+            padding: 8px 15px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+        .header button:hover {
+            background-color: #c82333;
+        }
+        .admin-section {
+            display: none; 
+            margin-top: 30px;
+            padding: 20px;
+            border: 1px dashed #3cff00;
+            border-radius: 8px;
+            background-color: #eaf6ff;
+        }
+        .admin-section h2 {
+            color: #15b300;
+            margin-bottom: 15px;
+        }
+        form {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        form .full-width {
+            grid-column: 1 / -1;
+        }
+        .form-group {
+            display: flex;
+            flex-direction: column;
+        }
+        .form-group label {
+            margin-bottom: 5px;
+            font-weight: bold;
+            color: #555;
+        }
+        .form-group input {
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        button[type="submit"] {
+            background-color: #28a745;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.3s ease;
+            grid-column: 1 / -1; 
+        }
+        button[type="submit"]:hover {
+            background-color: #218838;
+        }
+        .search-section {
+            margin-bottom: 20px;
+            display: flex;
+            gap: 10px;
+        }
+        .search-section input {
+            flex-grow: 1;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        .search-section button {
+            background-color: #17b83a;
+            color: white;
+            padding: 8px 15px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+        .search-section button:hover {
+            background-color: #138496;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+        th {
+            background-color: #007bff;
+            color: white;
+        }
+        .employee-actions button {
+            background-color: #ffc107;
+            color: #333;
+            padding: 5px 10px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-right: 5px;
+            transition: background-color 0.3s ease;
+        }
+        .employee-actions button:hover {
+            background-color: #e0a800;
+        }
+        .employee-actions button.delete {
+            background-color: #dc3545;
+            color: white;
+        }
+        .employee-actions button.delete:hover {
+            background-color: #c82333;
+        }
+        #message {
+            margin-top: 20px;
+            padding: 10px;
+            border-radius: 4px;
+            background-color: #ffeeba;
+            color: #856404;
+            border: 1px solid #ffc107;
+            display: none; 
+        }
+    </style>
 </head>
 <body>
-  <h2>Panel de empleados</h2>
-  <button onclick="logout()">Cerrar sesión</button>
+    <div class="container">
+        <div class="header">
+            <h1>Panel de Administración de Empleados</h1>
+            <button id="logoutButton">Cerrar Sesión</button>
+        </div>
 
-  <div id="empleados"></div>
+        <div class="search-section">
+            <input type="text" id="searchInput" placeholder="Buscar empleado por nombre o apellido...">
+            <button id="searchButton">Buscar</button>
+            <button id="clearSearchButton">Mostrar Todos</button>
+        </div>
 
-  <script src="app.js"></script>
+        <h2>Lista de Empleados</h2>
+        <p id="message"></p>
+        <table id="employeesTable">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Nombre</th>
+                    <th>Apellidos</th>
+                    <th>Teléfono</th>
+                    <th>Correo Electrónico</th>
+                    <th>Dirección</th>
+                    <th class="admin-only-col">Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                </tbody>
+        </table>
+
+        <div id="adminSection" class="admin-section">
+            <h2>Agregar/Editar Empleado</h2>
+            <form id="employeeForm">
+                <input type="hidden" id="employeeId">
+                <div class="form-group">
+                    <label for="nombre">Nombre:</label>
+                    <input type="text" id="nombre" name="nombre" required>
+                </div>
+                <div class="form-group">
+                    <label for="apellidos">Apellidos:</label>
+                    <input type="text" id="apellidos" name="apellidos" required>
+                </div>
+                <div class="form-group">
+                    <label for="telefono">Teléfono:</label>
+                    <input type="text" id="telefono" name="telefono" required>
+                </div>
+                <div class="form-group">
+                    <label for="correo_electronico">Correo Electrónico:</label>
+                    <input type="email" id="correo_electronico" name="correo_electronico" required>
+                </div>
+                <div class="form-group full-width">
+                    <label for="direccion">Dirección:</label>
+                    <input type="text" id="direccion" name="direccion" required>
+                </div>
+                <button type="submit" id="saveEmployeeButton">Agregar Empleado</button>
+            </form>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
 </body>
 </html>
